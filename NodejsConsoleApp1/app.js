@@ -21,19 +21,95 @@ var bot = new builder.UniversalBot(connector);
 //    var userMessage = session.message.text;
 //    session.send('You Said: ' + userMessage);
 //});
-var model = process.env.model || 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/4e2bf8c6-1668-4f04-ad5c-50754776e149?subscription-key=c5425af1b05e4be1a5ea767cb4abda28&timezoneOffset=0&verbose=true&q=';
-bot.recognizer(new builder.LuisRecognizer(model));
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/4e2bf8c6-1668-4f04-ad5c-50754776e149?subscription-key=8e78db55acfb474aa6e5de3ad50ed781&staging=true&timezoneOffset=0&verbose=true&q=';
+var reco = new builder.LuisRecognizer(model);
+bot.recognizer(reco);
 
-bot.dialog("/", [
-    function (session) {
-        session.beginDialog('/ensureprofile', session.userData.profile);
+//bot.dialog("/", [
+//    function (session) {
+//        session.beginDialog('/ensureprofile', session.userData.profile);
+//    },
+//    function (session, result) {
+//        session.userData.profile = result.response;
+//        session.send('Hello %(name)s, looks like you work at %(company)s and are interested in a career in %(career)s', session.userData.profile);
+//    }
+
+//]);
+
+bot.dialog('Networking', [
+    function (session, args, next) {
+        //session.send('you are in the People dialog', session.userData.profile);
+        try {
+            var discip = builder.EntityRecognizer.findEntity(args.intent.entities, 'Discipline');
+            if (discip) { session.send('Extracted discipline as ' + discip.entity); }
+            var prsn = builder.EntityRecognizer.findEntity(args.intent.entities, 'Person')
+            if (prsn) { session.send('Extracted person as' + prsn.entity); }
+
+            session.send('Here are some people you may know...');
+            var eventRange = ['Charles', '  Jason', 'Ann', 'Jack', 'Peter', 'Martin'];
+            var cards = eventRange.map(function (x) { return createCard(session, x, 'personlookup') });
+
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+            builder.Prompts.text(session, message);
+
+        }
+        catch (err) { session.send(err.message); }
     },
-    function (session, result) {
-        session.userData.profile = result.response;
-        session.send('Hello %(name)s, looks like you work at %(company)s and are interested in a career in %(career)s', session.userData.profile);
+    function (session, results, next) {
+        if (results.response) {
+            var temp = results.response;
+            temp = temp.substring(temp.indexOf("__")+2);
+            var meetMsg = 'Would you like to setup a meeting with:  ' + temp + '?';
+            //session.send(meetMsg);
+            builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
+        }
+    },
+    function (session, results) {
+        session.send('Received ' + results.response.entity);
     }
+]).triggerAction({
+    matches: 'Networking',
+    onInterrupted: function (session) {
+        session.send('Please provide additional networking information');
+    }
+});
 
-]);
+bot.dialog('Upskill', [
+    function (session, args, next) {
+        //session.send('you are in the People dialog', session.userData.profile);
+        try {
+            var eventEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'trainingtype');
+            session.send('Extracted ' + eventEntity.entity);
+            session.send('Here are some events... which of these look interesting?');
+            var eventRange = ['Java', 'Training 2', 'Training 3', 'Training 4', 'Training 5', 'Training 6'];
+            var cards = eventRange.map(function (x) { return createCard(session, x,'Training') });
+            //builder.Prompts.choice(session, 'What is your age group?', agerange );
+
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+            //session.send(message, session.userData.profile);
+            builder.Prompts.text(session, message);
+
+        }
+        catch (err) { session.send('upskill catch: ' + err.message); }
+    },
+    function (session, results, next) {
+        if (results.response) {
+            var temp = results.response;
+            temp = temp.substring(temp.indexOf("__") + 2);
+            var meetMsg = 'Would you like to attend ' + temp + '?';
+            //session.send(meetMsg);
+            builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
+        } else (session.send('Did not get a response'));
+    },
+    function (session, results) {
+        session.send('Received ' + results.response.entity);
+    }
+]).triggerAction({
+    matches: 'Upskill',
+    onInterrupted: function (session) {
+        session.send('Please provide additional upskill information');
+    }
+});
 
 bot.dialog('/ensureprofile', [
     function (session, args, next) {
@@ -41,9 +117,10 @@ bot.dialog('/ensureprofile', [
         session.dialogData.profile = args || {};
         //var name = builder.EntityRecognizer.findEntity(args.intent.entities, 'username');
         try {
-            var peopleEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'Discipline');
+            var peopleEntity = builder.EntityRecognizer.findEntity(args.entities, 'Discipline');
+            
         }
-        catch (err) { console.write(err.message); }
+        catch (err) { session.send(err.message); }
 
         if (!session.dialogData.profile.name) {
             builder.Prompts.text(session, 'Hi, What is your name?');
@@ -55,7 +132,7 @@ bot.dialog('/ensureprofile', [
             session.dialogData.profile.name = results.response;
         }
         if (!session.dialogData.profile.company) {
-            builder.Prompts.text(session, 'Hi %(name)s, Which company do you work for?', session.userData.profile);
+            builder.Prompts.text(session, 'Hi' + session.dialogData.profile.name + ', Which company do you work for?');
         } else { next();}
     },
     function (session, result, next) {
@@ -85,12 +162,14 @@ bot.dialog('/ensureprofile', [
 
 server.post('/api/messages', connector.listen());
 
-function createCard(session, value) {
+function createCard(session, value, tag) {
     var card = new builder.ThumbnailCard(session)
-    .title(value)
-    //card.images([builder.CardImage.create(session, profile.imageurl)]);
-    card.tap(new builder.CardAction.imBack(session, value, 'CSP'));
-    return card;
+        .title(value)
+        .subtitle(tag)
+     //card.images([builder.CardImage.create(session, profile.imageurl)]);
+    //card.tap(new builder.CardAction.imBack(session, "personLookup" + value, tag));
+    card.tap(new builder.CardAction.postBack(session, tag + "__" + value));
+     return card;
 }
 
     
