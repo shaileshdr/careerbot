@@ -182,20 +182,38 @@ bot.dialog('/ensureprofile', [
 server.post('/api/messages', connector.listen());
 
 function createCard(session, value, tag) {
+    switch (value){
+        case 'Charles':
+            var txt = 'Global Program Manager @ Microsoft. Ghana native. Chicago Booth MBA & Tufts Engineering Grad. Amazon & McMaster - Carr Alum.Co - owner of @WishfulThinkerClothing';
+            var title = 'Global Program Manager';
+            break;
+        case 'Jason':
+            var txt = 'Jason Geiger, a digital experience designer, developer, strategist with over 8 years of experience working with national B2B and B2C brands';
+            var title = 'UX Designer';
+            break;
+        case 'Ankur':
+            var txt = 'Ankur recently completed his Masters in Computer Science at USC. Currently, he is working on a new service at Microsoft Azure: Container Registry for Docker';
+            var title = 'Software Design Engineer';
+            break;
+        default:
+            var txt = 'Default Content';
+            var title = 'Rockstar';
+            break;
+    }
     //var car = new builder.HeroCard(session);
     //https://sec.ch9.ms/ch9/7ff5/e07cfef0-aa3b-40bb-9baa-7c9ef8ff7ff5/buildreactionbotframework_960.jpg
 
     //var card = new builder.ThumbnailCard(session)
     //    .title(value)
     //    .subtitle(tag)
-    // //card.images([builder.CardImage.create(session, profile.imageurl)]);
-    ////card.tap(new builder.CardAction.imBack(session, value, tag));
+    // card.images([builder.CardImage.create(session, profile.imageurl)]);
+    //card.tap(new builder.CardAction.imBack(session, value, tag));
     //card.tap(new builder.CardAction.postBack(session, tag + "__" + value));
     // return card;
     return new builder.HeroCard(session)
         .title(value)
-        .subtitle('Software Engineer at Microsoft Azure')
-        .text('Ankur recently completed his Masters in Computer Science at USC. Currently, he is working on a new service at Microsoft Azure: Container Registry for Docker.')
+        .subtitle(title)
+        .text(txt)
         .images([
             builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\' + value +'.jpg')
         ])
