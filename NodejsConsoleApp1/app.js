@@ -87,6 +87,7 @@ bot.dialog('Networking', [
     },
     function (session, results) {
         session.send('Received ' + results.response.entity);
+        session.endDialog('Bye');
     }
 ]).triggerAction({
     matches: 'Networking',
@@ -102,26 +103,28 @@ bot.dialog('Upskill', [
         try {
             var eventEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'trainingtype');
             if (eventEntity) { session.send('Extracted ' + eventEntity.entity); }
+
             session.send('Here are some events... which of these look interesting?');
             var eventRange = ['Java', 'Training 2', 'Training 3', 'Training 4', 'Training 5', 'Training 6'];
-            var cards = eventRange.map(function (x) { return createCard(session, x,'training') });
-             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+            var cards = eventRange.map(function (x) { return createTrainingCard(session, x,'training') });
+
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
              builder.Prompts.text(session, message);
         }
         catch (err) { session.send('upskill catch: ' + err.message); }
     },
     function (session, results, next) {
-        session.send('I am here');
-        //if (results.response) {
-        //    var temp = results.response;
-        //    temp = temp.substring(temp.indexOf("__") + 2);
-        //    var meetMsg = 'Would you like to attend ' + temp + '?';
-        //    //session.send(meetMsg);
-        //    builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
-        //} else (session.send('Did not get a response'));
+        if (results.response) {
+            var temp = results.response;
+            //temp = temp.substring(temp.indexOf("__") + 2);
+            var meetMsg = 'Would you like to attend ' + temp + '?';
+            //session.send(meetMsg);
+            builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
+        } else (session.send('Did not get a response'));
     },
     function (session, results) {
         session.send('Received ' + results.response.entity);
+        session.endDialog('Enjoy the Event');
     }
 ]).triggerAction({
     matches: ['Upskill', 'training', 'trainingtype'],
@@ -221,5 +224,17 @@ function createCard(session, value, tag) {
             builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
             builder.CardAction.postBack(session, tag + "__" + value, 'Setup a meeting'),
             builder.CardAction.postBack(session, 'http://www.twitter.com', 'Follow on Twitter'),
+        ]);
+}
+function createTrainingCard(session, value, tag) {
+    return new builder.HeroCard(session)
+        .title(value)
+        .subtitle(tag)
+        .images([
+            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\training.png')
+        ])
+        .buttons([
+            //builder.CardAction.postBack(session, tag + "__" + value, 'Add to Schedule'),
+            builder.CardAction.dialogAction(session, 'upskill', value, 'Add to Calendar')
         ]);
 }
