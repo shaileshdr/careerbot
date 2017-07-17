@@ -13,7 +13,13 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 var connector = new builder.ChatConnector();
 
 // create the bot
-var bot = new builder.UniversalBot(connector);
+//var bot = new builder.UniversalBot(connector);
+var bot = new builder.UniversalBot(connector, [
+    function (session) {
+        session.send("Welcome to AI Buddy Bot!");
+        //session.beginDialog("mainMenu");
+    }
+]);
 
 //add dialog
 //bot.dialog("/", function (session) {
@@ -35,7 +41,22 @@ bot.recognizer(reco);
 //    }
 
 //]);
-
+bot.dialog("mainMenu", [
+    function (session) {
+        builder.Prompts.choice(session, 'What would you like to do', 'Network|Find Training or Events| Find a new job', {
+            listStyle: builder.ListStyle.button
+        })
+    },
+    function (session, results) {
+        if (results.response) {
+            session.send('reveived' + results.response);
+        }
+    }
+])
+.triggerAction({
+    matches: /^clear$/i,
+    confirmPrompt: "This will reset your session. Are you sure?"
+});
 bot.dialog('Networking', [
     function (session, args, next) {
         //session.send('you are in the People dialog', session.userData.profile);
@@ -46,8 +67,8 @@ bot.dialog('Networking', [
             if (prsn) { session.send('Extracted person as' + prsn.entity); }
 
             session.send('Here are some people you may know...');
-            var eventRange = ['Charles', '  Jason', 'Ann', 'Jack', 'Peter', 'Martin'];
-            var cards = eventRange.map(function (x) { return createCard(session, x, 'personlookup') });
+            var Range = ['Charles', 'Jason', 'Ankur', 'Ann', 'Peter', 'Martin'];
+            var cards = Range.map(function (x) { return createCard(session, x, 'personlookup') });
 
             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
             builder.Prompts.text(session, message);
@@ -71,6 +92,7 @@ bot.dialog('Networking', [
     matches: 'Networking',
     onInterrupted: function (session) {
         session.send('Please provide additional networking information');
+        session.endDialog('Bye');
     }
 });
 
@@ -79,33 +101,30 @@ bot.dialog('Upskill', [
         //session.send('you are in the People dialog', session.userData.profile);
         try {
             var eventEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'trainingtype');
-            session.send('Extracted ' + eventEntity.entity);
+            if (eventEntity) { session.send('Extracted ' + eventEntity.entity); }
             session.send('Here are some events... which of these look interesting?');
             var eventRange = ['Java', 'Training 2', 'Training 3', 'Training 4', 'Training 5', 'Training 6'];
-            var cards = eventRange.map(function (x) { return createCard(session, x,'Training') });
-            //builder.Prompts.choice(session, 'What is your age group?', agerange );
-
-            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
-            //session.send(message, session.userData.profile);
-            builder.Prompts.text(session, message);
-
+            var cards = eventRange.map(function (x) { return createCard(session, x,'training') });
+             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+             builder.Prompts.text(session, message);
         }
         catch (err) { session.send('upskill catch: ' + err.message); }
     },
     function (session, results, next) {
-        if (results.response) {
-            var temp = results.response;
-            temp = temp.substring(temp.indexOf("__") + 2);
-            var meetMsg = 'Would you like to attend ' + temp + '?';
-            //session.send(meetMsg);
-            builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
-        } else (session.send('Did not get a response'));
+        session.send('I am here');
+        //if (results.response) {
+        //    var temp = results.response;
+        //    temp = temp.substring(temp.indexOf("__") + 2);
+        //    var meetMsg = 'Would you like to attend ' + temp + '?';
+        //    //session.send(meetMsg);
+        //    builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
+        //} else (session.send('Did not get a response'));
     },
     function (session, results) {
         session.send('Received ' + results.response.entity);
     }
 ]).triggerAction({
-    matches: 'Upskill',
+    matches: ['Upskill', 'training', 'trainingtype'],
     onInterrupted: function (session) {
         session.send('Please provide additional upskill information');
     }
@@ -163,13 +182,26 @@ bot.dialog('/ensureprofile', [
 server.post('/api/messages', connector.listen());
 
 function createCard(session, value, tag) {
-    var card = new builder.ThumbnailCard(session)
-        .title(value)
-        .subtitle(tag)
-     //card.images([builder.CardImage.create(session, profile.imageurl)]);
-    //card.tap(new builder.CardAction.imBack(session, "personLookup" + value, tag));
-    card.tap(new builder.CardAction.postBack(session, tag + "__" + value));
-     return card;
-}
+    //var car = new builder.HeroCard(session);
+    //https://sec.ch9.ms/ch9/7ff5/e07cfef0-aa3b-40bb-9baa-7c9ef8ff7ff5/buildreactionbotframework_960.jpg
 
-    
+    //var card = new builder.ThumbnailCard(session)
+    //    .title(value)
+    //    .subtitle(tag)
+    // //card.images([builder.CardImage.create(session, profile.imageurl)]);
+    ////card.tap(new builder.CardAction.imBack(session, value, tag));
+    //card.tap(new builder.CardAction.postBack(session, tag + "__" + value));
+    // return card;
+    return new builder.HeroCard(session)
+        .title(value)
+        .subtitle('Software Engineer at Microsoft Azure')
+        .text('Ankur recently completed his Masters in Computer Science at USC. Currently, he is working on a new service at Microsoft Azure: Container Registry for Docker.')
+        .images([
+            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\' + value +'.jpg')
+        ])
+        .buttons([
+            builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
+            builder.CardAction.postBack(session, tag + "__" + value, 'Setup a meeting'),
+            builder.CardAction.postBack(session, 'http://www.twitter.com', 'Follow on Twitter'),
+        ]);
+}
