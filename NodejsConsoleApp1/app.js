@@ -18,29 +18,32 @@ var bot = new builder.UniversalBot(connector, [
     function (session) {
         session.send("Welcome to AI Buddy Bot!");
         //session.beginDialog("mainMenu");
+        builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button});
+    },
+    function (session, results, next) {
+        if (results.response.entity == 'Yes') {
+            builder.Prompts.choice(session, 'Where would you like to start?', 'Sample Questions|Topics I can help with', { listStyle: builder.ListStyle.button });
+        } else { session.endDialog('OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\''); }
+    },
+    function (session, results) {
+        var temp = results.response.entity;
+        switch (temp) {
+            case 'Sample Questions':
+                var mes = 'You can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \' I want to learn Nodejs \'';
+                break;
+            case 'Topics I can help with':
+                var mes = 'I can help you with Networking, finding a new job, or finding training';
+                break;
+        }
+        session.send(mes);
+        session.endDialog('What is your question?');
     }
 ]);
 
-//add dialog
-//bot.dialog("/", function (session) {
-    
-//    var userMessage = session.message.text;
-//    session.send('You Said: ' + userMessage);
-//});
 var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/4e2bf8c6-1668-4f04-ad5c-50754776e149?subscription-key=8e78db55acfb474aa6e5de3ad50ed781&staging=true&timezoneOffset=0&verbose=true&q=';
 var reco = new builder.LuisRecognizer(model);
 bot.recognizer(reco);
 
-//bot.dialog("/", [
-//    function (session) {
-//        session.beginDialog('/ensureprofile', session.userData.profile);
-//    },
-//    function (session, result) {
-//        session.userData.profile = result.response;
-//        session.send('Hello %(name)s, looks like you work at %(company)s and are interested in a career in %(career)s', session.userData.profile);
-//    }
-
-//]);
 bot.dialog("mainMenu", [
     function (session) {
         builder.Prompts.choice(session, 'What would you like to do', 'Network|Find Training or Events| Find a new job', {
@@ -50,12 +53,12 @@ bot.dialog("mainMenu", [
     function (session, results) {
         if (results.response) {
             session.send('reveived' + results.response);
+            session.endDialog();
         }
     }
 ])
 .triggerAction({
-    matches: /^clear$/i,
-    confirmPrompt: "This will reset your session. Are you sure?"
+    matches: ['Hi', 'Hello']
 });
 bot.dialog('Networking', [
     function (session, args, next) {
