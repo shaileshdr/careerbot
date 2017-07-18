@@ -2,12 +2,12 @@
 var restify = require('restify');
 
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, function () {
-    console.log('%s listening to %s', server.name, server.url);
-});
-//server.listen(3978, function () {
+//server.listen(process.env.port || process.env.PORT || 3978, function () {
 //    console.log('%s listening to %s', server.name, server.url);
 //});
+server.listen(3978, function () {
+    console.log('%s listening to %s', server.name, server.url);
+});
 
 // create the connector
 var connector = new builder.ChatConnector();
@@ -125,7 +125,7 @@ bot.dialog('Upskill', [
         try {
             if (results.response) { session.userData.commit = results.response.entity; }
             session.send('Here are some events relevant to ' + session.userData.skill + ' which of these look interesting?');
-            var eventRange = ['Java', 'Training 2', 'Training 3', 'Training 4', 'Training 5', 'Training 6'];
+            var eventRange = ['node1', 'node2', 'node3', 'node4'];
             var cards = eventRange.map(function (x) { return createTrainingCard(session, x, 'training') });
             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
             builder.Prompts.text(session, message);
@@ -248,14 +248,33 @@ function createCard(session, value, tag) {
         ]);
 }
 function createTrainingCard(session, value, tag) {
+    switch (value) {
+        case 'node1':
+            var txt = 'Equip yourself with the knowledge to build, test, deploy, and scale Node.js web applications in production';
+            var title = 'Zero to Production Node.js';
+            break;
+        case 'node2':
+            var txt = 'Learning how to build an API with Node.js can sometimes be overwhelming. In this course, join Scott Moss as he explains how to design, build, test, and deploy a RESTful API using Node.js and Mongo.';
+            var title = 'API Design in Node.js Using Express and Mongo';
+            break;
+        case 'node3':
+            var txt = 'Are you already familiar with Angular 2 and Node.js? If so, this course can help you leverage these two popular frameworks to build a full-stack web application';
+            var title = 'Building a Simple Full-Stack App with Angular 2, Node.js';
+            break;
+        case 'node4':
+            var txt = 'Build a microservice-based system using Node.js. In the industry, Node.js is widely used to implement microservices that consume and provide APIs.';
+            var title = 'Building a Slack Bot with Node.js Microservices';
+            break;
+    }
+
     return new builder.HeroCard(session)
-        .title(value)
-        .subtitle(tag)
+        .title(title)
+        .subtitle(txt)
         .images([
-            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\training.png')
+            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\' + value + '.png')
         ])
         .buttons([
             //builder.CardAction.postBack(session, tag + "__" + value, 'Add to Schedule'),
-            builder.CardAction.dialogAction(session, 'skill', value, 'Add to Calendar')
+            builder.CardAction.dialogAction(session, 'skill', title, 'Add to Calendar')
         ]);
 }
