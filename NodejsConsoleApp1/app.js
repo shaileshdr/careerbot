@@ -102,29 +102,47 @@ bot.dialog('Upskill', [
         //session.send('you are in the People dialog', session.userData.profile);
         try {
             var eventEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'trainingtype');
-            if (eventEntity) { session.send('Extracted ' + eventEntity.entity); }
+            if (eventEntity) { session.send('Extracted ' + eventEntity.entity); session.userData.event = eventEntity.entity; }
 
-            session.send('Here are some events... which of these look interesting?');
-            var eventRange = ['Java', 'Training 2', 'Training 3', 'Training 4', 'Training 5', 'Training 6'];
-            var cards = eventRange.map(function (x) { return createTrainingCard(session, x,'training') });
-
-            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
-             builder.Prompts.text(session, message);
+            var skilltype = builder.EntityRecognizer.findEntity(args.intent.entities, 'skill');
+            if (skilltype) { var skl = skilltype.entity; session.userData.skill = skl; next()}
+            else { builder.Prompts.text('What skill set are you looking for') }
         }
         catch (err) { session.send('upskill catch: ' + err.message); }
     },
     function (session, results, next) {
-        if (results.response) {
-            var temp = results.response;
-            //temp = temp.substring(temp.indexOf("__") + 2);
-            var meetMsg = 'Would you like to attend ' + temp + '?';
-            //session.send(meetMsg);
-            builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
-        } else (session.send('Did not get a response'));
+        try {
+            if (results.response) { session.userData.skill = results.response; }
+            if (!session.userData.commit) {
+                builder.Prompts.choice(session, 'Optimze for', 'Paid|Duration|All', { listStyle: builder.ListStyle.button });
+            } else { next(); }
+        } catch (err) {session.send('In error area 1') }
+    },
+    function (session, results, next) {
+        try {
+            if (results.response) { session.userData.commit = results.response.entity; }
+            session.send('Here are some events relevant to ' + session.userData.skill + ' which of these look interesting?');
+            var eventRange = ['Java', 'Training 2', 'Training 3', 'Training 4', 'Training 5', 'Training 6'];
+            var cards = eventRange.map(function (x) { return createTrainingCard(session, x, 'training') });
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+            builder.Prompts.text(session, message);
+        } catch (err) { session.send('In error area 2'); }
+    },
+    function (session, results, next) {
+        try {
+            if (results.response) {
+                var temp = results.response;
+                temp = temp.substring(temp.indexOf("=") + 1);
+                var meetMsg = 'Would you like to attend ' + temp + '?';
+                builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
+            } else (session.send('Did not get a response'));
+        } catch (err) { sessoin.send('In error area 3'); }
     },
     function (session, results) {
-        session.send('Received ' + results.response.entity);
-        session.endDialog('Enjoy the Event');
+        try {
+            session.send('Received ' + results.response.entity);
+            session.endDialog('Enjoy the Event for ' + session.userData.skill + 'in the category ' + session.userData.commit);
+        } catch (err) { session.send('In error area 4'); }
     }
 ]).triggerAction({
     matches: ['Upskill', 'training', 'trainingtype'],
@@ -235,6 +253,6 @@ function createTrainingCard(session, value, tag) {
         ])
         .buttons([
             //builder.CardAction.postBack(session, tag + "__" + value, 'Add to Schedule'),
-            builder.CardAction.dialogAction(session, 'upskill', value, 'Add to Calendar')
+            builder.CardAction.dialogAction(session, 'skill', value, 'Add to Calendar')
         ]);
 }
