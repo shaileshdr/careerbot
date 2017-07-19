@@ -2,12 +2,12 @@
 var restify = require('restify');
 
 var server = restify.createServer();
-//server.listen(process.env.port || process.env.PORT || 3978, function () {
-//    console.log('%s listening to %s', server.name, server.url);
-//});
-server.listen(3978, function () {
+server.listen(process.env.port || process.env.PORT || 3978, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
+//server.listen(3978, function () {
+//    console.log('%s listening to %s', server.name, server.url);
+//});
 
 // create the connector
 var connector = new builder.ChatConnector();
@@ -108,10 +108,12 @@ bot.dialog('Upskill', [
             if (eventEntity) { session.send('Extracted ' + eventEntity.entity); session.userData.event = eventEntity.entity; }
 
             var skilltype = builder.EntityRecognizer.findEntity(args.intent.entities, 'skill');
-            if (skilltype) { var skl = skilltype.entity; session.userData.skill = skl; next()}
-            else { builder.Prompts.text('What skill set are you looking for') }
+            if (skilltype) { var skl = skilltype.entity; session.userData.skill = skl; next();}
+            else {
+                builder.Prompts.text(session, 'What skill set are you looking for? You can say things like \'I want to learn Nodejs\'');
+            }
         }
-        catch (err) { session.send('upskill catch: ' + err.message); }
+        catch (err) { session.send('upskill catch: ' + err); }
     },
     function (session, results, next) {
         try {
@@ -119,13 +121,13 @@ bot.dialog('Upskill', [
             if (!session.userData.commit) {
                 builder.Prompts.choice(session, 'Optimze for', 'Paid|Duration|All', { listStyle: builder.ListStyle.button });
             } else { next(); }
-        } catch (err) {session.send('In error area 1') }
+        } catch (err) { session.send('In error area 1'); }
     },
     function (session, results, next) {
         try {
             if (results.response) { session.userData.commit = results.response.entity; }
             session.send('Here are some events relevant to ' + session.userData.skill + ' which of these look interesting?');
-            var eventRange = ['node1', 'node2', 'node3', 'node4'];
+            var eventRange = ['node1', 'node2', 'node3', 'node4', 'node5', 'node6'];
             var cards = eventRange.map(function (x) { return createTrainingCard(session, x, 'training') });
             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
             builder.Prompts.text(session, message);
@@ -239,7 +241,7 @@ function createCard(session, value, tag) {
         .subtitle(title)
         .text(txt)
         .images([
-            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\' + value +'.jpg')
+            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\images\\' + value +'.jpg')
         ])
         .buttons([
             builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
@@ -252,18 +254,32 @@ function createTrainingCard(session, value, tag) {
         case 'node1':
             var txt = 'Equip yourself with the knowledge to build, test, deploy, and scale Node.js web applications in production';
             var title = 'Zero to Production Node.js';
+            var url = 'https://www.lynda.com/Node-js-tutorials/Zero-Production-Node-js-Amazon-Web-Services/604260-2.html';
             break;
         case 'node2':
             var txt = 'Learning how to build an API with Node.js can sometimes be overwhelming. In this course, join Scott Moss as he explains how to design, build, test, and deploy a RESTful API using Node.js and Mongo.';
             var title = 'API Design in Node.js Using Express and Mongo';
+            var url = 'https://www.lynda.com/Node-js-tutorials/API-Design-Node-js-Using-Express-Mongo/604259-2.html';
             break;
         case 'node3':
             var txt = 'Are you already familiar with Angular 2 and Node.js? If so, this course can help you leverage these two popular frameworks to build a full-stack web application';
             var title = 'Building a Simple Full-Stack App with Angular 2, Node.js';
+            var url = 'https://www.lynda.com/AngularJS-tutorials/Building-Simple-Full-Stack-App-Angular-2-Node/576588-2.html';
             break;
         case 'node4':
             var txt = 'Build a microservice-based system using Node.js. In the industry, Node.js is widely used to implement microservices that consume and provide APIs.';
             var title = 'Building a Slack Bot with Node.js Microservices';
+            var url = 'https://www.lynda.com/Node-js-tutorials/Building-Slack-Bot-Node-js-Microservices/509406-2.html';
+            break;
+        case 'node5':
+            var title = 'Building Functional Prototypes using Node.js';
+            var txt = 'Learn the basics of back-end web development as you create a simple web application server using Node.js.';
+            var url = 'https://www.edx.org/course/building-functional-prototypes-using-microsoft-dev280x';
+            break;
+        case 'node6':
+            var title = 'Real-Time Web with Node.js';
+            var txt = 'Accelerate your development efforts by learning how to work with HTML5 APIs for real-time communications using Node.js.';
+            var url = 'https://www.lynda.com/Node-js-tutorials/Real-Time-Web-Node-js/573614-2.html';
             break;
     }
 
@@ -271,10 +287,10 @@ function createTrainingCard(session, value, tag) {
         .title(title)
         .subtitle(txt)
         .images([
-            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\' + value + '.png')
+            builder.CardImage.create(session, 'C:\\Users\\shailr\\documents\\visual studio 2015\\Projects\\NodejsConsoleApp1\\NodejsConsoleApp1\\images\\' + value + '.png')
         ])
         .buttons([
-            //builder.CardAction.postBack(session, tag + "__" + value, 'Add to Schedule'),
+            builder.CardAction.openUrl(session, url, 'View course details'),
             builder.CardAction.dialogAction(session, 'skill', title, 'Add to Calendar')
         ]);
 }
