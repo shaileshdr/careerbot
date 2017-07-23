@@ -213,6 +213,18 @@ bot.dialog('/ensureprofile', [
     }
 ]);
 
+// Serve a static web page
+
+server.get(/.*/, restify.serveStatic({
+
+    'directory': '.',
+
+    'default': 'index.html'
+
+}));
+
+
+
 server.post('/api/messages', connector.listen());
 
 function createCard(session, value, tag) {
