@@ -4,9 +4,9 @@ var restify = require('restify');
 
 var botConnectorOptions = {
 
-    appId: process.env.BOTFRAMEWORK_APPID,
+    appId: process.env.MICROSOFT_APP_ID,
 
-    appPassword: process.env.BOTFRAMEWORK_APPSECRET
+    appPassword: process.env.MICROSOFT_APP_PASSWORD
 
 };
 
