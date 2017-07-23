@@ -48,7 +48,7 @@ var bot = new builder.UniversalBot(connector, [
     }
 ]);
 
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/4e2bf8c6-1668-4f04-ad5c-50754776e149?subscription-key=8e78db55acfb474aa6e5de3ad50ed781&staging=true&timezoneOffset=0&verbose=true&q=';
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/4e2bf8c6-1668-4f04-ad5c-50754776e149?subscription-key=8e78db55acfb474aa6e5de3ad50ed781&timezoneOffset=0&verbose=true&q=';
 var reco = new builder.LuisRecognizer(model);
 bot.recognizer(reco);
 
