@@ -9,8 +9,16 @@ server.listen(process.env.port || process.env.PORT || 80, function () {
 //    console.log('%s listening to %s', server.name, server.url);
 //});
 
+var botConnectorOptions = {
+
+    appId: process.env.BOTFRAMEWORK_APPID,
+
+    appPassword: process.env.BOTFRAMEWORK_APPSECRET
+
+};
+
 // create the connector
-var connector = new builder.ChatConnector();
+var connector = new builder.ChatConnector(botConnectorOptions);
 
 // create the bot
 //var bot = new builder.UniversalBot(connector);
