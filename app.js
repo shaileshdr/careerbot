@@ -210,6 +210,66 @@ bot.dialog('/ensureprofile', [
     }
 ]);
 
+bot.dialog('jobIntent', [
+    
+    //Step1
+    function (session, args, next) {
+        if (!session.userData.team) {
+            session.send('It seems you have not told me which team you would like to work for yet!');
+            session.beginDialog('team');
+        }
+        if (!session.userData.skill) {
+            session.send('It seems you have not yet told me your preferred skill so that I can start looking for jobs that suit you!');
+            session.beginDialog('skill');
+        }
+        session.send(session.userData.team + ' is a great team! Here are some jobs based on your skill interest in ' /
+        + session.userData.skill + ' for this team.');
+
+        try {
+            var jobRange = ['SWE', 'SWE2', 'DataScientist', 'SWE3', 'SWE4'];
+            var cards = careerRange.map(function (x) { return createAIJobCard(session,x) });
+
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
+            builder.Prompts.text(session, message)
+
+        } catch (Exception) {
+            console.log('Error in the jobIntent cards.');
+        }
+    },
+
+    //step 2
+    function (session, result) {
+        session.send('Also, I have set up daily alerts for all open ' + session.userData.team + '! Please check your email.');
+    }
+
+]).triggerAction({
+    matches: ['career', 'job', 'future', 'employment', 'employ'],
+    onInterrupted: function (session) {
+        session.send('Please provide additional job intent information');
+    }
+});
+
+bot.dialog('team'), [
+    function (session) {
+        builder.Prompts.text(session, 'Let me know your preference such as "C&E", "Office", "AI&R"!');
+    }, 
+    function (session, results) {
+        console.log(results);
+        userData.team = results;
+        session.beginDialog('jobIntent');
+    }
+];
+
+bot.dialog('skill'), [
+    function (session) {
+        builder.Prompts.text(session, 'What skill are you looking to apply for in a job? Examples: "Machine Learning", "AI", "Web-Development"');
+    },
+    function (session, results) {
+        console.log(results);
+        userData.skill = results;
+        session.beginDialog('jobIntent');
+    }
+];
 
 
 function createCard(session, value, tag) {
@@ -297,6 +357,73 @@ function createTrainingCard(session, value, tag) {
         .buttons([
             builder.CardAction.openUrl(session, url, 'View course details'),
             builder.CardAction.dialogAction(session, 'skill', title, 'Add to Calendar')
+        ]);
+}
+
+
+function createAIJobCard(session, value) {
+    switch(value) {
+
+        case 'SWE':
+            var title = 'Software Engineer';
+            var location = 'Sunnyvale, CA'
+            var level = '62'
+            var description = "Come work for the Bing Ads team that is the economic engine for Bing and Microsoft! \
+            If listening to customers and conceiving + developing great products is your forte, we’d love to hear from you. \
+            Customer focus is not just a buzzword for us. We are a team that works closely with some of the top brand name companies \
+            in the world to help improve their ROI on Bing Ads. We are a nimble team that drives solution";
+
+        case 'SWE2':
+            var title = 'Senior Software Engineer';
+            var location = 'Redmond, WA'
+            var level = '62'
+            var description = "We are looking for software engineers or “wiz coders” who are passionate about data and want to \
+            apply machine learning techniques to solve real-world problems for enterprises and consumers. You will help develop \
+            capabilities for deep learning models and tools and solutions around it. You will work with data from diverse structured \
+            and unstructured data sources in both batch and streaming modes, and various formats including tabular, image/video, audio, \
+            text and time series.";
+
+        case 'DataScientist':
+            var title = 'Data Scientist'
+            var location = 'San Francisco, CA'
+            var level = '61'
+            var description = "We are creating the future of real-time analytics. \
+            We are re-imagining what it could be so we can deliver a modern analytics experience and enable anyone to collect, \
+            process, and visualize data in minutes. We are empowering people to build incredible products using data-driven insight.";
+
+        case 'SWE3':
+            var title = 'Software Engineer'
+            var location = 'Austin, TX'
+            var level = '61'
+            var description = "We are a small, rapidly growing team. We value people, learning, and doing the right thing. \
+            We cultivate a high-trust environment with great collaboration and fun. We want people who envision what could be, \
+            help others succeed, and learn constantly. We try new ideas and fail-fast. We use the minimal process needed to deliver \
+            great results as a team. We love delighting our customers and aim to deliver an exceptional platform and user experience.";
+
+        case 'SWE4':
+            var title = 'Software Engineer'
+            var location = 'Redmond, WA'
+            var level = '63'
+            var description = "Do you love gadgets? Do you love to build experiences that “just work” to make your life easier? \
+            Do you love making devices more intelligent and useful? Cortana Home Automation is a newly formed team that works on \
+            enabling rich Cortana experiences for a variety of devices. We work closely with partners across and outside the company \
+            to deliver a set of experiences that empower users by providing truly assistive capabilities. We make users’ lives easier \
+            by helping them take action and stay in control of their busy lives, both at home and at work. You will be joining a young \
+            team within Cortana - exploring territory on how Cortana can enable seamless device connectivity and control in your home \
+            and at work. Our team, at its core, values individual creativity and passion and is a place where developers have ample \
+            learning and growth opportunities.";
+    }
+
+    return new builder.HeroCard(session)
+        .title(title)
+        .subtitle(txt)
+        .images([
+            //builder.CardImage.create(session, '/Images/' + value + '.png')
+        ])
+        .buttons([
+            builder.CardAction.postBack(session, 'Apply', 'Apply'),
+            builder.CardAction.postBack(session, 'Bookmark', 'Bookmark'),
+            builder.CardAction.postBack(session, 'Contact Recruiter', 'Contact Recruiter')
         ]);
 }
 
