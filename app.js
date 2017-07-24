@@ -246,7 +246,7 @@ function createCard(session, value, tag) {
         .subtitle(title)
         .text(txt)
         .images([
-            builder.CardImage.create(session, '/Images/' + value +'.jpg')
+            builder.CardImage.create(session, 'https://github.com/ankurkhemani/careerbot/tree/master/Images/' + value +'.jpg')
         ])
         .buttons([
             builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
@@ -292,7 +292,7 @@ function createTrainingCard(session, value, tag) {
         .title(title)
         .subtitle(txt)
         .images([
-            builder.CardImage.create(session, '/Images/' + value + '.png')
+            builder.CardImage.create(session, 'https://github.com/ankurkhemani/careerbot/tree/master/Images/' + value + '.png')
         ])
         .buttons([
             builder.CardAction.openUrl(session, url, 'View course details'),
