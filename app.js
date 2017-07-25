@@ -45,7 +45,7 @@ var bot = new builder.UniversalBot(connector, [
     }
 ]);
 
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/4e2bf8c6-1668-4f04-ad5c-50754776e149?subscription-key=8e78db55acfb474aa6e5de3ad50ed781&timezoneOffset=0&verbose=true&q=';
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=bd51ef0b83a247038d746690a5ed9829&staging=true&verbose=true&timezoneOffset=0&q=';
 var reco = new builder.LuisRecognizer(model);
 bot.recognizer(reco);
 
@@ -210,66 +210,48 @@ bot.dialog('/ensureprofile', [
     }
 ]);
 
-bot.dialog('jobIntent', [
+bot.dialog('JobIntent', [
     
     //Step1
     function (session, args, next) {
-        if (!session.userData.team) {
+        var teamEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'team');
+            if (teamEntity) { session.send('Extracted ' + teamEntity.entity); session.userData.team = teamEntity.entity; }
+        if (!session.userData.team || session.userData.team == 'undefined') {
             session.send('It seems you have not told me which team you would like to work for yet!');
-            session.beginDialog('team');
+            builder.Prompts.text(session, 'Let me know your preference such as "C&E", "Office", "AI&R"!');
         }
-        if (!session.userData.skill) {
-            session.send('It seems you have not yet told me your preferred skill so that I can start looking for jobs that suit you!');
-            session.beginDialog('skill');
+        else {
+            next();
+        } 
+    },
+    //Step2
+    function (session, result, next) {
+        if (result) {
+            session.userData.team = result.response;
         }
-        session.send(session.userData.team + ' is a great team! Here are some jobs based on your skill interest in ' /
-        + session.userData.skill + ' for this team.');
-
-        try {
-            var jobRange = ['SWE', 'SWE2', 'DataScientist', 'SWE3', 'SWE4'];
-            var cards = careerRange.map(function (x) { return createAIJobCard(session,x) });
-
-            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
-            builder.Prompts.text(session, message)
-
-        } catch (Exception) {
-            console.log('Error in the jobIntent cards.');
-        }
+        next();
+    },
+    //Step3
+    function (session, result, next) {
+        session.send(session.userData.team + ' is a great team! Here are some jobs based on your skill interest and level.');
+        var jobRange = ['SWE', 'SWE2', 'DataScientist', 'SWE3', 'SWE4'];
+        var cards = jobRange.map(function (x) { return createAIJobCard(session,x) });
+        var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
+        builder.Prompts.text(session, message)
     },
 
-    //step 2
+    //Step4
     function (session, result) {
-        session.send('Also, I have set up daily alerts for all open ' + session.userData.team + '! Please check your email.');
+        session.send('Also, I have set up daily alerts for all open ' + session.userData.team + ' roles! Please check your email.');
+        session.endDialog();
     }
 
 ]).triggerAction({
-    matches: ['career', 'job', 'future', 'employment', 'employ'],
+    matches: ['JobIntent'],
     onInterrupted: function (session) {
         session.send('Please provide additional job intent information');
     }
 });
-
-bot.dialog('team'), [
-    function (session) {
-        builder.Prompts.text(session, 'Let me know your preference such as "C&E", "Office", "AI&R"!');
-    }, 
-    function (session, results) {
-        console.log(results);
-        userData.team = results;
-        session.beginDialog('jobIntent');
-    }
-];
-
-bot.dialog('skill'), [
-    function (session) {
-        builder.Prompts.text(session, 'What skill are you looking to apply for in a job? Examples: "Machine Learning", "AI", "Web-Development"');
-    },
-    function (session, results) {
-        console.log(results);
-        userData.skill = results;
-        session.beginDialog('jobIntent');
-    }
-];
 
 
 function createCard(session, value, tag) {
@@ -363,7 +345,6 @@ function createTrainingCard(session, value, tag) {
 
 function createAIJobCard(session, value) {
     switch(value) {
-
         case 'SWE':
             var title = 'Software Engineer';
             var location = 'Sunnyvale, CA'
@@ -372,7 +353,7 @@ function createAIJobCard(session, value) {
             If listening to customers and conceiving + developing great products is your forte, we’d love to hear from you. \
             Customer focus is not just a buzzword for us. We are a team that works closely with some of the top brand name companies \
             in the world to help improve their ROI on Bing Ads. We are a nimble team that drives solution";
-
+            break;
         case 'SWE2':
             var title = 'Senior Software Engineer';
             var location = 'Redmond, WA'
@@ -382,7 +363,7 @@ function createAIJobCard(session, value) {
             capabilities for deep learning models and tools and solutions around it. You will work with data from diverse structured \
             and unstructured data sources in both batch and streaming modes, and various formats including tabular, image/video, audio, \
             text and time series.";
-
+            break;
         case 'DataScientist':
             var title = 'Data Scientist'
             var location = 'San Francisco, CA'
@@ -390,7 +371,7 @@ function createAIJobCard(session, value) {
             var description = "We are creating the future of real-time analytics. \
             We are re-imagining what it could be so we can deliver a modern analytics experience and enable anyone to collect, \
             process, and visualize data in minutes. We are empowering people to build incredible products using data-driven insight.";
-
+            break;
         case 'SWE3':
             var title = 'Software Engineer'
             var location = 'Austin, TX'
@@ -399,7 +380,7 @@ function createAIJobCard(session, value) {
             We cultivate a high-trust environment with great collaboration and fun. We want people who envision what could be, \
             help others succeed, and learn constantly. We try new ideas and fail-fast. We use the minimal process needed to deliver \
             great results as a team. We love delighting our customers and aim to deliver an exceptional platform and user experience.";
-
+            break;
         case 'SWE4':
             var title = 'Software Engineer'
             var location = 'Redmond, WA'
@@ -412,11 +393,16 @@ function createAIJobCard(session, value) {
             team within Cortana - exploring territory on how Cortana can enable seamless device connectivity and control in your home \
             and at work. Our team, at its core, values individual creativity and passion and is a place where developers have ample \
             learning and growth opportunities.";
+            break;
+        default:
+            title = '';
     }
 
     return new builder.HeroCard(session)
         .title(title)
-        .subtitle(txt)
+        .subtitle(location)
+        .text(level)
+        .text(description)
         .images([
             //builder.CardImage.create(session, '/Images/' + value + '.png')
         ])
@@ -442,6 +428,6 @@ server.get(/.*/, restify.serveStatic({
 
 server.post('/api/messages', connector.listen());
 
-server.listen(process.env.port || process.env.PORT || 80, function () {
+server.listen(process.env.port || process.env.PORT || 3978, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
