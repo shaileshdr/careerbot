@@ -11,7 +11,7 @@ var botConnectorOptions = {
 
 // create the connector
 var connector = new builder.ChatConnector(botConnectorOptions);
-
+var dir = __dirname;
 
 var restify = require('restify');
 
@@ -246,10 +246,11 @@ bot.dialog('JobIntent', [
     //Step1
     function (session, args, next) {
         var teamEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'team');
-            if (teamEntity) { session.send('Extracted ' + teamEntity.entity); session.userData.team = teamEntity.entity; }
-        if (!session.userData.team || session.userData.team == 'undefined') {
-            session.send('It seems you have not told me which team you would like to work for yet!');
-            builder.Prompts.text(session, 'Let me know your preference such as "C&E", "Office", "AI&R"!');
+            if (teamEntity) { session.userData.team = teamEntity.entity.charAt(0).toUpperCase() + teamEntity.entity.slice(1); }
+        console.log(session.userData.team);
+        if (!session.userData.team) {
+            session.send('Which team you would like to work for?');
+            builder.Prompts.text(session, 'Let me know your preference such as "C&E", "Office", "Azure"!');
         }
         else {
             next();
@@ -257,7 +258,8 @@ bot.dialog('JobIntent', [
     },
     //Step2
     function (session, result, next) {
-        if (result) {
+        if (result && !session.userData.team) {
+            console.log(result);
             session.userData.team = result.response;
         }
         next();
@@ -272,7 +274,7 @@ bot.dialog('JobIntent', [
     },
 
     //Step4
-    function (session, result) {
+    function (session, result, next) {
         session.send('Also, I have set up daily alerts for all open ' + session.userData.team + ' roles! Please check your email.');
         session.endDialog();
     }
@@ -284,8 +286,7 @@ bot.dialog('JobIntent', [
     }
     }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
-    });
-
+});
 
 function createCard(session, value, tag) {
     switch (value){
@@ -375,44 +376,43 @@ function createTrainingCard(session, value, tag) {
         ]);
 }
 
-
 function createAIJobCard(session, value) {
+    var smallest = "We are creating the future of real-time analytics. We are re-imagining what it could be so we can deliver a modern analytics experience and enable anyone to collect, process, and visualize data in minutes. We are empowering people to build incredible products using data-driven insight."
+    var sn = smallest.length;
     switch(value) {
         case 'SWE':
             var title = 'Software Engineer';
-            var location = 'Sunnyvale, CA'
+            var location = 'Redmond, WA'
             var level = '62'
-            var description = "Come work for the Bing Ads team that is the economic engine for Bing and Microsoft! \
-            If listening to customers and conceiving + developing great products is your forte, we’d love to hear from you. \
-            Customer focus is not just a buzzword for us. We are a team that works closely with some of the top brand name companies \
-            in the world to help improve their ROI on Bing Ads. We are a nimble team that drives solution";
+            var description = "Come work for the Azure IoT team. We are paving the road for connecting devices to the Cloud! \
+            If connecting the world and developing great products is your forte, we’d love to hear from you. \
+            We try new ideas and fail-fast. We use the minimal process needed to deliver great results as a team. \
+            We love delighting our customers and aim to deliver an exceptional platform and user experience.".substring(0, sn) + "...";
             break;
         case 'SWE2':
             var title = 'Senior Software Engineer';
-            var location = 'Redmond, WA'
+            var location = 'Sunnyvale, CA'
             var level = '62'
-            var description = "We are looking for software engineers or “wiz coders” who are passionate about data and want to \
+            var description = ("We are looking for software engineers or “wiz coders” who are passionate about data and want to \
             apply machine learning techniques to solve real-world problems for enterprises and consumers. You will help develop \
             capabilities for deep learning models and tools and solutions around it. You will work with data from diverse structured \
             and unstructured data sources in both batch and streaming modes, and various formats including tabular, image/video, audio, \
-            text and time series.";
+            text and time series.").substring(0, sn) + "...";
             break;
         case 'DataScientist':
             var title = 'Data Scientist'
-            var location = 'San Francisco, CA'
+            var location = 'Austin, TX'
             var level = '61'
-            var description = "We are creating the future of real-time analytics. \
-            We are re-imagining what it could be so we can deliver a modern analytics experience and enable anyone to collect, \
-            process, and visualize data in minutes. We are empowering people to build incredible products using data-driven insight.";
+            var description = ("We are creating the future of real-time analytics. We are re-imagining what it could be so we can deliver a modern analytics experience and enable anyone to collect, process, and visualize data in minutes. We are empowering people to build incredible products using data-driven insight.").substring(0, sn) + "...";
             break;
         case 'SWE3':
             var title = 'Software Engineer'
-            var location = 'Austin, TX'
+            var location = 'Redmond, WA'
             var level = '61'
-            var description = "We are a small, rapidly growing team. We value people, learning, and doing the right thing. \
+            var description = ("We are a small, rapidly growing team. We value people, learning, and doing the right thing. \
             We cultivate a high-trust environment with great collaboration and fun. We want people who envision what could be, \
             help others succeed, and learn constantly. We try new ideas and fail-fast. We use the minimal process needed to deliver \
-            great results as a team. We love delighting our customers and aim to deliver an exceptional platform and user experience.";
+            great results as a team. We love delighting our customers and aim to deliver an exceptional platform and user experience.").substring(0, sn) + "...";
             break;
         case 'SWE4':
             var title = 'Software Engineer'
@@ -421,11 +421,12 @@ function createAIJobCard(session, value) {
             var description = "Do you love gadgets? Do you love to build experiences that “just work” to make your life easier? \
             Do you love making devices more intelligent and useful? Cortana Home Automation is a newly formed team that works on \
             enabling rich Cortana experiences for a variety of devices. We work closely with partners across and outside the company \
-            to deliver a set of experiences that empower users by providing truly assistive capabilities.";
+            to deliver a set of experiences that empower users by providing truly assistive capabilities.".substring(0, sn) + "...";
             break;
         default:
             title = '';
     }
+        
 
     return new builder.HeroCard(session)
         .title(title)
@@ -433,7 +434,7 @@ function createAIJobCard(session, value) {
         .text(level)
         .text(description)
         .images([
-            //builder.CardImage.create(session, '/Images/' + value + '.png')
+            builder.CardImage.create(session, dir + '/Images/SWE.jpg')
         ])
         .buttons([
             builder.CardAction.postBack(session, 'Apply', 'Apply'),
