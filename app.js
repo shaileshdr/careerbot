@@ -70,24 +70,32 @@ bot.dialog('Networking', [
         //session.send('you are in the People dialog', session.userData.profile);
         try {
             var discip = builder.EntityRecognizer.findEntity(args.intent.entities, 'Discipline');
-            if (discip) { session.send('Extracted discipline as ' + discip.entity); }
+            //if (discip) { session.send('Extracted discipline as ' + discip.entity); }
             var prsn = builder.EntityRecognizer.findEntity(args.intent.entities, 'Person')
-            if (prsn) { session.send('Extracted person as' + prsn.entity); }
+            //if (prsn) { session.send('Extracted person as' + prsn.entity); }
 
-            session.send('Here are some people you may know...');
-            var Range = ['Charles', 'Jason', 'Ankur', 'Ann', 'Peter', 'Martin'];
-            var cards = Range.map(function (x) { return createCard(session, x, 'personlookup') });
-
-            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+            var message = 'Sure thing. Any specific function like Dev or PM?';
             builder.Prompts.text(session, message);
 
         }
         catch (err) { session.send(err.message); }
     },
     function (session, results, next) {
+        try {
+            session.send('Got it... Here are some people you may know');
+            var Range = ['Charles', 'Jason', 'Ankur', 'Ann', 'Peter', 'Martin'];
+            var cards = Range.map(function (x) { return createCard(session, x, 'personlookup') });
+
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
+            builder.Prompts.text(session, message);
+        } catch (err) {
+            session.send(err.message);
+        }
+    },
+    function (session, results, next) {
         if (results.response) {
             var temp = results.response;
-            temp = temp.substring(temp.indexOf("__")+2);
+            temp = temp.substring(temp.indexOf("__") + 2);
             var meetMsg = 'Would you like to setup a meeting with:  ' + temp + '?';
             //session.send(meetMsg);
             builder.Prompts.choice(session, meetMsg, 'Yes|No', { listStyle: builder.ListStyle.button });
@@ -103,7 +111,10 @@ bot.dialog('Networking', [
         session.send('Please provide additional networking information');
         session.endDialog('Bye');
     }
-});
+})
+    .cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+        matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
+    });
 
 bot.dialog('Upskill', [
     function (session, args, next) {
@@ -112,26 +123,26 @@ bot.dialog('Upskill', [
             var eventEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'trainingtype');
             if (eventEntity) { session.send('Extracted ' + eventEntity.entity); session.userData.event = eventEntity.entity; }
 
-            var skilltype = builder.EntityRecognizer.findEntity(args.intent.entities, 'skill');
-            if (skilltype) { var skl = skilltype.entity; session.userData.skill = skl; next();}
-            else {
+            var skillName = builder.EntityRecognizer.findEntity(args.intent.entities, 'skill');
+            session.userData.skill = skillName.entity;
+            if (!session.userData.skill) {
                 builder.Prompts.text(session, 'What skill set are you looking for? You can say things like \'I want to learn Nodejs\'');
-            }
+            } else { next(); }
         }
         catch (err) { session.send('upskill catch: ' + err); }
     },
-    function (session, results, next) {
-        try {
-            if (results.response) { session.userData.skill = results.response; }
-            if (!session.userData.commit) {
-                builder.Prompts.choice(session, 'Optimze for', 'Paid|Duration|All', { listStyle: builder.ListStyle.button });
-            } else { next(); }
-        } catch (err) { session.send('In error area 1'); }
-    },
+    //function (session, results, next) {
+    //    try {
+    //        if (results.response) { session.userData.skill = results.response; }
+    //        if (!session.userData.commit) {
+    //            builder.Prompts.choice(session, 'Optimze for', 'Paid|Duration|All', { listStyle: builder.ListStyle.button });
+    //        } else { next(); }
+    //    } catch (err) { session.send('In error area 1'); }
+    //},
     function (session, results, next) {
         try {
             if (results.response) { session.userData.commit = results.response.entity; }
-            session.send('Here are some events relevant to ' + session.userData.skill + ' which of these look interesting?');
+            session.send(session.userData.skill + ' is hot right now. Here are some popular classes to check out');
             var eventRange = ['node1', 'node2', 'node3', 'node4', 'node5', 'node6'];
             var cards = eventRange.map(function (x) { return createTrainingCard(session, x, 'training') });
             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');
@@ -150,15 +161,17 @@ bot.dialog('Upskill', [
     },
     function (session, results) {
         try {
-            session.send('Received ' + results.response.entity);
-            session.endDialog('Enjoy the Event for ' + session.userData.skill + 'in the category ' + session.userData.commit);
+            //session.send('Received ' + results.response.entity);
+            session.endDialog('Added to your calendar');
         } catch (err) { session.send('In error area 4'); }
     }
 ]).triggerAction({
     matches: ['Upskill', 'training', 'trainingtype'],
     onInterrupted: function (session) {
-        session.send('Please provide additional upskill information');
+        session.endConversation('Please provide additional upskill information');
     }
+}).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+    matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
 
 bot.dialog('/ensureprofile', [
@@ -288,7 +301,7 @@ function createCard(session, value, tag) {
         .subtitle(title)
         .text(txt)
         .images([
-            builder.CardImage.create(session, '/Images/' + value +'.jpg')
+            builder.CardImage.create(session, 'https://github.com/ankurkhemani/careerbot/tree/master/Images/' + value +'.jpg')
         ])
         .buttons([
             builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
@@ -334,7 +347,7 @@ function createTrainingCard(session, value, tag) {
         .title(title)
         .subtitle(txt)
         .images([
-            builder.CardImage.create(session, '/Images/' + value + '.png')
+            builder.CardImage.create(session, 'https://github.com/ankurkhemani/careerbot/tree/master/Images/' + value + '.png')
         ])
         .buttons([
             builder.CardAction.openUrl(session, url, 'View course details'),
