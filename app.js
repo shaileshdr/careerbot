@@ -29,7 +29,7 @@ server.get(/\/?.*/, restify.serveStatic({
 
 server.post('/api/messages', connector.listen());
 
-server.listen(process.env.port || process.env.PORT || 80, function () {
+server.listen(process.env.port || process.env.PORT || 3978, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
 
@@ -61,7 +61,7 @@ var bot = new builder.UniversalBot(connector, [
     }
 ]);
 
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=bd51ef0b83a247038d746690a5ed9829&staging=true&verbose=true&timezoneOffset=0&q=';
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=13f0a045525c444d8d58f6013d2e6cbc&staging=true&timezoneOffset=0&verbose=true&q=';
 var reco = new builder.LuisRecognizer(model);
 bot.recognizer(reco);
 
@@ -285,6 +285,136 @@ bot.dialog('JobIntent', [
     }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
+
+bot.dialog('EasterEgg', [
+
+    function(session, args, next) {
+        var voiceEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'voice');
+            if (voiceEntity) { session.userData.voice = voiceEntity.entity.charAt(0).toUpperCase() + voiceEntity.entity.slice(1); }
+        if (voiceEntity) {
+            var easterRange = ['Voice'];
+            var cards = easterRange.map(function (x) { return createEasterEggVoiceCard(session,x) });
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
+            builder.Prompts.text(session, message)
+        }
+        next();
+    },
+    function(session, next) {
+        var easterRange = ['TeamPic', 'TeamPic2'];
+        var cards = easterRange.map(function (x) { return createEasterEggGroupCard(session,x) });
+        var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
+        builder.Prompts.text(session, message)
+    },
+    function (session, response) {
+        var easterRange = ['Charles', 'Jason', 'Ankur', 'Xue', 'Shailesh', 'Ann', 'Gerardo'];
+        var cards = easterRange.map(function (x) { return createEasterEggIndividualCard(session,x) });
+        var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
+        builder.Prompts.text(session, message)
+    },
+    function(session, next) {
+        session.endDialog();
+    }
+
+]).triggerAction({
+    matches:['EasterEgg'],
+    onInterrupted: function (session) {
+        session.send('Please provide additional easter egg information');
+    }
+    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+        matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
+})
+
+function createEasterEggVoiceCard(session, value) {
+    switch (value) {
+        case 'Voice':
+            var title = "The Voice of CareerBot";
+            break;
+        default:
+            var title = '';
+    }
+    return new builder.HeroCard(session)
+    .title(title)
+    .images([
+        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+    ])
+    .buttons([
+        builder.CardAction.postBack(session, 'MeetTeam' , 'Meet the team behind CareerBot! :)')
+    ]);
+}
+function createEasterEggGroupCard(session, value) {
+    switch (value) {
+        case 'TeamPic':
+            var title = ""
+            break;
+        case 'TeamPic2':
+            var title = "";
+            break;
+    }
+
+    return new builder.HeroCard(session)
+    .title(title)
+    .images([
+        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+    ])
+    .buttons([
+        builder.CardAction.postBack(session, 'MeetTeam' , 'Meet the team behind CareerBot! :)')
+    ]);
+
+}
+
+function createEasterEggIndividualCard(session, value) {
+    switch (value) {
+        case 'Charles':
+            var description = 'Global Program Manager @ Microsoft. Ghana native. Chicago Booth MBA & Tufts Engineering Grad. \n <alias>';
+            var name = 'Charles Wartemberg';
+            var title = 'Team Lead';
+            break;
+        case 'Jason':
+            var description = 'Jason Geiger, a digital experience designer, developer, strategist with over 8 years of experience working with national B2B and B2C brands';
+            var name = 'Jason Geiger';
+            var title = 'Strategist Team';
+            break;
+        case 'Ann':
+            var description = 'HR Trax intern with Global Talent acquisition for Engineering & Operations. Joint degree(MBA|MHRIR) candidate at the University of Illinois, Urbana-Champaign. '
+            var name = 'Ann Mary George';
+            var title = 'Strategist Team';
+            break;
+        case 'Shailesh':
+            var description = ''
+            var name = 'Shailesh Ratadia'
+            var title = 'Developer Team';
+            break;
+        case 'Xue':
+            var description = 'Data Scientist in Microsoft HR department.'
+            var name = 'Xue Liu'
+            var title = 'Strategist Team';
+            break;
+        case 'Ankur':
+            var description = 'CareerBuddy Dev Team Member. Ankur recently completed his Masters in Computer Science at USC. Currently, he is working on a new service at Microsoft Azure: Container Registry for Docker';
+            var name = 'Ankur Khemani';
+            var title = 'Developer Team';
+            break;
+        case 'Gerardo':
+            var description = 'Gerardo is an undergraduate student at the University of Texas at El Paso! Currently, he is interning on the Azure IoT team as an explorer intern working on a User Journey project.'
+            var name = 'Gerardo Uranga'
+            var title = 'Developer Team';
+            break;
+        default:
+            var txt = 'hi';
+    }
+
+    return new builder.HeroCard(session)
+    .title(name)
+    .subtitle(title)
+    .text(description)
+    .images([
+        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+    ])
+    .buttons([
+        builder.CardAction.postBack(session, 'Email' , 'Email us at careerbot@microsoft.com')
+    ]);
+
+}
 
 function createCard(session, value, tag) {
     switch (value){
