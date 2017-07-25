@@ -264,7 +264,9 @@ bot.dialog('JobIntent', [
     onInterrupted: function (session) {
         session.send('Please provide additional job intent information');
     }
-});
+    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+        matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
+    });
 
 
 function createCard(session, value, tag) {
@@ -441,6 +443,6 @@ server.get(/.*/, restify.serveStatic({
 
 server.post('/api/messages', connector.listen());
 
-server.listen(process.env.port || process.env.PORT || 3978, function () {
+server.listen(process.env.port || process.env.PORT || 80, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
