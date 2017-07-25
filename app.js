@@ -11,7 +11,6 @@ var botConnectorOptions = {
 
 // create the connector
 var connector = new builder.ChatConnector(botConnectorOptions);
-var dir = __dirname;
 
 var restify = require('restify');
 
@@ -25,8 +24,7 @@ var server = restify.createServer();
 
 server.get(/\/?.*/, restify.serveStatic({
     directory: __dirname,
-    default: 'index.html',
-    match: /^((?!app.js).)*$/   // we should deny access to the application source
+    default: 'index.html'
 }));
 
 server.post('/api/messages', connector.listen());
@@ -434,7 +432,7 @@ function createAIJobCard(session, value) {
         .text(level)
         .text(description)
         .images([
-            builder.CardImage.create(session, dir + '/images/SWE.jpg')
+            builder.CardImage.create(session, __dirname + '/images/SWE.jpg')
         ])
         .buttons([
             builder.CardAction.postBack(session, 'Apply', 'Apply'),
