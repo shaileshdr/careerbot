@@ -434,7 +434,7 @@ function createAIJobCard(session, value) {
         .text(level)
         .text(description)
         .images([
-            builder.CardImage.create(session, dir + '/Images/SWE.jpg')
+            builder.CardImage.create(session, dir + '/images/SWE.jpg')
         ])
         .buttons([
             builder.CardAction.postBack(session, 'Apply', 'Apply'),
