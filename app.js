@@ -308,7 +308,7 @@ bot.dialog('EasterEgg', [
         builder.Prompts.text(session, message)
     },
     function (session, response) {
-        var easterRange = ['Charles', 'Jason', 'Ankur', 'Xue', 'Shailesh', 'Ann', 'Gerardo'];
+        var easterRange = ['Charles', 'Jason', 'Shailesh', 'Ankur', 'Xue', 'Ann', 'Gerardo'];
         var cards = easterRange.map(function (x) { return createEasterEggIndividualCard(session,x) });
         var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
         builder.Prompts.text(session, message)
@@ -382,7 +382,7 @@ function createEasterEggIndividualCard(session, value) {
             var title = 'Strategist Team';
             break;
         case 'Shailesh':
-            var description = ''
+            var description = 'Technology Evangelist at Microsoft. Technical Leader and software developer with over 17 years of experience. Proficient in leading global, cross-functional teams'
             var name = 'Shailesh Ratadia'
             var title = 'Developer Team';
             break;
