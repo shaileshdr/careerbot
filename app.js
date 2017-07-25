@@ -403,11 +403,7 @@ function createAIJobCard(session, value) {
             var description = "Do you love gadgets? Do you love to build experiences that “just work” to make your life easier? \
             Do you love making devices more intelligent and useful? Cortana Home Automation is a newly formed team that works on \
             enabling rich Cortana experiences for a variety of devices. We work closely with partners across and outside the company \
-            to deliver a set of experiences that empower users by providing truly assistive capabilities. We make users’ lives easier \
-            by helping them take action and stay in control of their busy lives, both at home and at work. You will be joining a young \
-            team within Cortana - exploring territory on how Cortana can enable seamless device connectivity and control in your home \
-            and at work. Our team, at its core, values individual creativity and passion and is a place where developers have ample \
-            learning and growth opportunities.";
+            to deliver a set of experiences that empower users by providing truly assistive capabilities.";
             break;
         default:
             title = '';
