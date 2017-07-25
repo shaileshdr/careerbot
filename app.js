@@ -63,7 +63,7 @@ var bot = new builder.UniversalBot(connector, [
     }
 ]);
 
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=bd51ef0b83a247038d746690a5ed9829&staging=true&verbose=true&timezoneOffset=0&q=';
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=13f0a045525c444d8d58f6013d2e6cbc&staging=true&timezoneOffset=0&verbose=true&q=';
 var reco = new builder.LuisRecognizer(model);
 bot.recognizer(reco);
 
@@ -289,7 +289,19 @@ bot.dialog('JobIntent', [
 });
 
 bot.dialog('EasterEgg', [
+
     function(session, args, next) {
+        var voiceEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'voice');
+            if (voiceEntity) { session.userData.voice = voiceEntity.entity.charAt(0).toUpperCase() + voiceEntity.entity.slice(1); }
+        if (voiceEntity) {
+            var easterRange = ['Voice'];
+            var cards = easterRange.map(function (x) { return createEasterEggVoiceCard(session,x) });
+            var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
+            builder.Prompts.text(session, message)
+        }
+        next();
+    },
+    function(session, next) {
         var easterRange = ['TeamPic', 'TeamPic2'];
         var cards = easterRange.map(function (x) { return createEasterEggGroupCard(session,x) });
         var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
@@ -314,6 +326,23 @@ bot.dialog('EasterEgg', [
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 })
 
+function createEasterEggVoiceCard(session, value) {
+    switch (value) {
+        case 'Voice':
+            var title = "The Voice of CareerBot";
+            break;
+        default:
+            var title = '';
+    }
+    return new builder.HeroCard(session)
+    .title(title)
+    .images([
+        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+    ])
+    .buttons([
+        builder.CardAction.postBack(session, 'MeetTeam' , 'Meet the team behind CareerBot! :)')
+    ]);
+}
 function createEasterEggGroupCard(session, value) {
     switch (value) {
         case 'TeamPic':
