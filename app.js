@@ -1,5 +1,4 @@
 ﻿var builder = require('botbuilder');
-var restify = require('restify');
 
 
 var botConnectorOptions = {
@@ -13,9 +12,28 @@ var botConnectorOptions = {
 // create the connector
 var connector = new builder.ChatConnector(botConnectorOptions);
 
-//server.listen(3978, function () {
-//    console.log('%s listening to %s', server.name, server.url);
-//});
+
+var restify = require('restify');
+
+var express = require('express');
+var app = express();
+app.use('/images', express.static(__dirname + '/images'));
+
+var server = restify.createServer();
+
+// Serve a static web page
+
+server.get(/\/?.*/, restify.serveStatic({
+    directory: __dirname,
+    default: 'index.html',
+    match: /^((?!app.js).)*$/   // we should deny access to the application source
+}));
+
+server.post('/api/messages', connector.listen());
+
+server.listen(process.env.port || process.env.PORT || 80, function () {
+    console.log('%s listening to %s', server.name, server.url);
+});
 
 // create the bot
 //var bot = new builder.UniversalBot(connector);
@@ -303,7 +321,7 @@ function createCard(session, value, tag) {
         .subtitle(title)
         .text(txt)
         .images([
-            builder.CardImage.create(session, 'https://github.com/ankurkhemani/careerbot/tree/master/Images/' + value +'.jpg')
+            builder.CardImage.create(session, __dirname + "/images/" + value + ".jpg")
         ])
         .buttons([
             builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
@@ -349,7 +367,7 @@ function createTrainingCard(session, value, tag) {
         .title(title)
         .subtitle(txt)
         .images([
-            builder.CardImage.create(session, 'https://github.com/ankurkhemani/careerbot/tree/master/Images/' + value + '.png')
+            builder.CardImage.create(session, __dirname + "/images/" + value + ".png")
         ])
         .buttons([
             builder.CardAction.openUrl(session, url, 'View course details'),
@@ -425,20 +443,3 @@ function createAIJobCard(session, value) {
 }
 
 
-var server = restify.createServer();
-
-// Serve a static web page
-
-server.get(/.*/, restify.serveStatic({
-
-    'directory': '.',
-
-    'default': 'index.html'
-
-}));
-
-server.post('/api/messages', connector.listen());
-
-server.listen(process.env.port || process.env.PORT || 80, function () {
-    console.log('%s listening to %s', server.name, server.url);
-});
