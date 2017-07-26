@@ -237,7 +237,6 @@ bot.dialog('/ensureprofile', [
 ]);
 
 bot.dialog('JobIntent', [
-    
     //Step1
     function (session, args, next) {
         var teamEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'team');
@@ -251,7 +250,7 @@ bot.dialog('JobIntent', [
             next();
         } 
     },
-    //Step2
+    //Step2 
     function (session, result, next) {
         if (result && !session.userData.team) {
             console.log(result);
@@ -266,6 +265,7 @@ bot.dialog('JobIntent', [
         var cards = jobRange.map(function (x) { return createAIJobCard(session,x) });
         var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
         builder.Prompts.text(session, message)
+        session.userData.team = null;
     },
 
     //Step4
