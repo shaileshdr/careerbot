@@ -419,14 +419,17 @@ function createCard(session, value, tag) {
         case 'Charles':
             var txt = 'Global Program Manager @ Microsoft. Ghana native. Chicago Booth MBA & Tufts Engineering Grad. Amazon & McMaster - Carr Alum.Co - owner of @WishfulThinkerClothing';
             var title = 'Global Program Manager';
+            var lurl = 'https://www.linkedin.com/in/cwartemberg/';
             break;
         case 'Jason':
             var txt = 'Jason Geiger, a digital experience designer, developer, strategist with over 8 years of experience working with national B2B and B2C brands';
             var title = 'UX Designer';
+            var lurl = 'https://www.linkedin.com/in/jasonjgeiger/';
             break;
         case 'Ankur':
             var txt = 'Ankur recently completed his Masters in Computer Science at USC. Currently, he is working on a new service at Microsoft Azure: Container Registry for Docker';
             var title = 'Software Design Engineer';
+            var lurl = 'https://www.linkedin.com/in/ankurkhemani/';
             break;
         default:
             var txt = 'Default Content';
@@ -451,7 +454,7 @@ function createCard(session, value, tag) {
             builder.CardImage.create(session, __dirname + "/images/" + value + ".jpg")
         ])
         .buttons([
-            builder.CardAction.openUrl(session, 'https://www.linkedin.com/in/ankurkhemani/', 'View Linked In profile'),
+            builder.CardAction.openUrl(session, lurl, 'View Linked In profile'),
             builder.CardAction.postBack(session, tag + "__" + value, 'Setup a meeting'),
             builder.CardAction.postBack(session, 'http://www.twitter.com', 'Follow on Twitter'),
         ]);
