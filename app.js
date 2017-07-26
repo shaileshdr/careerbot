@@ -237,7 +237,7 @@ bot.dialog('/ensureprofile', [
 ]);
 
 bot.dialog('JobIntent', [
-    //Step1
+        //Step1
     function (session, args, next) {
         var teamEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'team');
             if (teamEntity) { session.userData.team = teamEntity.entity.charAt(0).toUpperCase() + teamEntity.entity.slice(1); }
@@ -265,12 +265,12 @@ bot.dialog('JobIntent', [
         var cards = jobRange.map(function (x) { return createAIJobCard(session,x) });
         var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
         builder.Prompts.text(session, message)
-        session.userData.team = null;
     },
 
     //Step4
     function (session, result, next) {
-        session.send('Also, I have set up daily alerts for all open ' + session.userData.team + ' roles! Please check your email.');
+        session.send('I have set up daily alerts for all open ' + session.userData.team + ' roles! Please check your email.');
+        session.userData.team = null;
         session.endDialog();
     }
 
@@ -287,13 +287,14 @@ bot.dialog('EasterEgg', [
 
     function(session, args, next) {
         var voiceEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'voice');
-            if (voiceEntity) { session.userData.voice = voiceEntity.entity.charAt(0).toUpperCase() + voiceEntity.entity.slice(1); }
-        if (voiceEntity) {
+        if (voiceEntity) { session.userData.voice = voiceEntity.entity.charAt(0).toUpperCase() + voiceEntity.entity.slice(1); 
+            console.log(session.userData.voice);
             var easterRange = ['Voice'];
             var cards = easterRange.map(function (x) { return createEasterEggVoiceCard(session,x) });
             var message = new builder.Message(session).attachments(cards).attachmentLayout('carousel');;
             builder.Prompts.text(session, message)
         }
+        console.log(session.userData.voice);
         next();
     },
     function(session, next) {
@@ -332,7 +333,7 @@ function createEasterEggVoiceCard(session, value) {
     return new builder.HeroCard(session)
     .title(title)
     .images([
-        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+        builder.CardImage.create(session, __dirname + '/images/' + value + '.jpg')
     ])
     .buttons([
         builder.CardAction.postBack(session, 'MeetTeam' , 'Meet the team behind CareerBot! :)')
@@ -351,7 +352,7 @@ function createEasterEggGroupCard(session, value) {
     return new builder.HeroCard(session)
     .title(title)
     .images([
-        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+        builder.CardImage.create(session, __dirname + '/images/' + value + '.jpg')
     ])
     .buttons([
         builder.CardAction.postBack(session, 'MeetTeam' , 'Meet the team behind CareerBot! :)')
@@ -405,7 +406,7 @@ function createEasterEggIndividualCard(session, value) {
     .subtitle(title)
     .text(description)
     .images([
-        builder.CardImage.create(session, dir + '/images/' + value + '.jpg')
+        builder.CardImage.create(session, __dirname + '/images/' + value + '.jpg')
     ])
     .buttons([
         builder.CardAction.postBack(session, 'Email' , 'Email us at careerbot@microsoft.com')
