@@ -37,7 +37,7 @@ server.listen(process.env.port || process.env.PORT || 80, function () {
 //var bot = new builder.UniversalBot(connector);
 var bot = new builder.UniversalBot(connector, [
     function (session, args) {
-        session.send("Welcome to AI Buddy Bot!. I am not trained to understand that yet. You can ask questions like \'who can mentor me? \' or \'Events around me\' or \'I want to learn Nodejs\'. If you need help, type \'help\'?");
+        session.send("Welcome to Career Buddy Bot!. I am not trained to understand that yet. You can ask questions like \'who can mentor me? \' or \'Events around me\' or \'I want to learn Nodejs\'. If you need help, type \'help\'?");
         //session.beginDialog("mainMenu");
         //builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button});
     }  
@@ -49,7 +49,7 @@ bot.recognizer(reco);
 
 bot.dialog("mainMenu", [
     function (session, args) {
-        session.send("Welcome to AI Buddy Bot!");
+        session.send("Welcome to Career Buddy Bot!");
         //session.beginDialog("mainMenu");
         builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button });
     },
@@ -508,7 +508,7 @@ function createAIJobCard(session, value) {
     switch(value) {
         case 'SWE':
             var title = 'Software Engineer';
-            var location = 'Redmond, WA'
+            var location = 'Redmond, WA | Level 62 | Posted 3 hours ago'
             var level = '62'
             var description = "Come work for the Azure IoT team. We are paving the road for connecting devices to the Cloud! \
             If connecting the world and developing great products is your forte, we’d love to hear from you. \
@@ -517,7 +517,7 @@ function createAIJobCard(session, value) {
             break;
         case 'SWE2':
             var title = 'Senior Software Engineer';
-            var location = 'Sunnyvale, CA'
+            var location = 'Sunnyvale, CA | Level 62 | Posted 9 days ago'
             var level = '62'
             var description = ("We are looking for software engineers or “wiz coders” who are passionate about data and want to \
             apply machine learning techniques to solve real-world problems for enterprises and consumers. You will help develop \
@@ -527,13 +527,13 @@ function createAIJobCard(session, value) {
             break;
         case 'DataScientist':
             var title = 'Data Scientist'
-            var location = 'Austin, TX'
+            var location = 'Austin, TX | Level 61 | Posted 12 days ago'
             var level = '61'
             var description = ("We are creating the future of real-time analytics. We are re-imagining what it could be so we can deliver a modern analytics experience and enable anyone to collect, process, and visualize data in minutes. We are empowering people to build incredible products using data-driven insight.").substring(0, sn) + "...";
             break;
         case 'SWE3':
             var title = 'Software Engineer'
-            var location = 'Redmond, WA'
+            var location = 'Redmond, WA | Level 61 | Posted 3 days ago'
             var level = '61'
             var description = ("We are a small, rapidly growing team. We value people, learning, and doing the right thing. \
             We cultivate a high-trust environment with great collaboration and fun. We want people who envision what could be, \
@@ -542,7 +542,7 @@ function createAIJobCard(session, value) {
             break;
         case 'SWE4':
             var title = 'Software Engineer'
-            var location = 'Redmond, WA'
+            var location = 'Redmond, WA | Level 63 | Posted 28 days ago '
             var level = '63'
             var description = "Do you love gadgets? Do you love to build experiences that “just work” to make your life easier? \
             Do you love making devices more intelligent and useful? Cortana Home Automation is a newly formed team that works on \
@@ -557,11 +557,10 @@ function createAIJobCard(session, value) {
     return new builder.HeroCard(session)
         .title(title)
         .subtitle(location)
-        .text(level)
-        .text(description)
-        .images([
-            builder.CardImage.create(session, __dirname + '/images/SWE.jpg')
-        ])
+         .text(description)
+        //.images([
+        //    builder.CardImage.create(session, __dirname + '/images/SWE.jpg')
+        //])
         .buttons([
             builder.CardAction.postBack(session, 'Apply', 'Apply'),
             builder.CardAction.postBack(session, 'Bookmark', 'Bookmark'),
