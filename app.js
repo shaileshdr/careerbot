@@ -29,17 +29,29 @@ server.get(/\/?.*/, restify.serveStatic({
 
 server.post('/api/messages', connector.listen());
 
-server.listen(process.env.port || process.env.PORT || 3978, function () {
+server.listen(process.env.port || process.env.PORT || 80, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
 
 // create the bot
 //var bot = new builder.UniversalBot(connector);
 var bot = new builder.UniversalBot(connector, [
-    function (session) {
+    function (session, args) {
+        session.send("Welcome to AI Buddy Bot!. I am not trained to understand that yet. You can ask questions like \'who can mentor me? \' or \'Events around me\' or \'I want to learn Nodejs\'. If you need help, type \'help\'?");
+        //session.beginDialog("mainMenu");
+        //builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button});
+    }  
+]);
+
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=13f0a045525c444d8d58f6013d2e6cbc&staging=true&timezoneOffset=0&verbose=true&q=';
+var reco = new builder.LuisRecognizer(model);
+bot.recognizer(reco);
+
+bot.dialog("mainMenu", [
+    function (session, args) {
         session.send("Welcome to AI Buddy Bot!");
         //session.beginDialog("mainMenu");
-        builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button});
+        builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button });
     },
     function (session, results, next) {
         if (results.response.entity == 'Yes') {
@@ -59,28 +71,13 @@ var bot = new builder.UniversalBot(connector, [
         session.send(mes);
         session.endDialog('What is your question?');
     }
-]);
-
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=13f0a045525c444d8d58f6013d2e6cbc&staging=true&timezoneOffset=0&verbose=true&q=';
-var reco = new builder.LuisRecognizer(model);
-bot.recognizer(reco);
-
-bot.dialog("mainMenu", [
-    function (session) {
-        builder.Prompts.choice(session, 'What would you like to do', 'Network|Find Training or Events| Find a new job', {
-            listStyle: builder.ListStyle.button
-        })
-    },
-    function (session, results) {
-        if (results.response) {
-            session.send('reveived' + results.response);
-            session.endDialog();
-        }
-    }
 ])
 .triggerAction({
-    matches: ['Hi', 'Hello']
+    matches: /^Hi$|^Hello$|^Hey.*there$|^help$/i
+}).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+    matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
+
 bot.dialog('Networking', [
     function (session, args, next) {
         //session.send('you are in the People dialog', session.userData.profile);
@@ -140,7 +137,7 @@ bot.dialog('Upskill', [
             if (eventEntity) { session.send('Extracted ' + eventEntity.entity); session.userData.event = eventEntity.entity; }
 
             var skillName = builder.EntityRecognizer.findEntity(args.intent.entities, 'skill');
-            session.userData.skill = skillName.entity;
+            if (skillName) { session.userData.skill = skillName.entity; }
             if (!session.userData.skill) {
                 builder.Prompts.text(session, 'What skill set are you looking for? You can say things like \'I want to learn Nodejs\'');
             } else { next(); }
