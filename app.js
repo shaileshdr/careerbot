@@ -43,7 +43,7 @@ var bot = new builder.UniversalBot(connector, [
     }  
 ]);
 
-var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=13f0a045525c444d8d58f6013d2e6cbc&staging=true&timezoneOffset=0&verbose=true&q=';
+var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/eaafbe33-c331-4d34-b9bc-fbee88afd390?subscription-key=bd51ef0b83a247038d746690a5ed9829&staging=true&timezoneOffset=0&verbose=true&q=';
 var reco = new builder.LuisRecognizer(model);
 bot.recognizer(reco);
 
@@ -73,8 +73,12 @@ bot.dialog("mainMenu", [
     }
 ])
 .triggerAction({
-    matches: /^Hi$|^Hello$|^Hey.*there$|^help$/i
-    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
+    matches: ['MainMenu'],
+    onInterrupted: function (session) {
+        session.endConversation('Sorry I did not get that. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'');
+    }
+})
+    .cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
     matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
 
@@ -116,13 +120,12 @@ bot.dialog('Networking', [
     },
     function (session, results) {
         session.send('Received ' + results.response.entity);
-        session.endDialog('Bye');
     }
 ]).triggerAction({
     matches: 'Networking',
     onInterrupted: function (session) {
-        session.send('Please provide additional networking information');
-        session.endDialog('Bye');
+        session.send('Sorry I did not get that. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'');
+        session.endDialog();
     }
 })
     .cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
@@ -181,7 +184,7 @@ bot.dialog('Upskill', [
 ]).triggerAction({
     matches: ['Upskill', 'training', 'trainingtype'],
     onInterrupted: function (session) {
-        session.endConversation('Please provide additional upskill information');
+        session.endConversation('Sorry I did not get that. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'');
     }
 }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
     matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
@@ -277,7 +280,7 @@ bot.dialog('JobIntent', [
 ]).triggerAction({
     matches: ['JobIntent'],
     onInterrupted: function (session) {
-        session.send('Please provide additional job intent information');
+        session.send('Sorry I did not get that. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'');
     }
     }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
@@ -316,7 +319,7 @@ bot.dialog('EasterEgg', [
 ]).triggerAction({
     matches:['EasterEgg'],
     onInterrupted: function (session) {
-        session.send('Please provide additional easter egg information');
+        session.send('Sorry I did not get that. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'');
     }
     }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
