@@ -37,7 +37,7 @@ server.listen(process.env.port || process.env.PORT || 80, function () {
 //var bot = new builder.UniversalBot(connector);
 var bot = new builder.UniversalBot(connector, [
     function (session, args) {
-        session.send("Welcome to Career Buddy Bot!. I am not trained to understand that yet. You can ask questions like \'who can mentor me? \' or \'Events around me\' or \'I want to learn Nodejs\'. If you need help, type \'help\'?");
+        session.send("Sorry! I am not trained to understand that yet. You can ask me questions like \'who can mentor me? \' or \'Events around me\' or \'I want to learn Nodejs\'. If you need help, type \'help\'?");
         //session.beginDialog("mainMenu");
         //builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button});
     }  
@@ -49,20 +49,20 @@ bot.recognizer(reco);
 
 bot.dialog("mainMenu", [
     function (session, args) {
-        session.send("Welcome to Career Buddy Bot!");
+        session.send("Welcome to Career Buddy, your personal assistant for career growth at Microsoft!");
         //session.beginDialog("mainMenu");
         builder.Prompts.choice(session, 'Would you like to know how I can help you?', 'Yes|No', { listStyle: builder.ListStyle.button });
     },
     function (session, results, next) {
         if (results.response.entity == 'Yes') {
             builder.Prompts.choice(session, 'Where would you like to start?', 'Sample Questions|Topics I can help with', { listStyle: builder.ListStyle.button });
-        } else { session.endDialog('OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\''); }
+        } else { session.endDialog('OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\''); }
     },
     function (session, results) {
         var temp = results.response.entity;
         switch (temp) {
             case 'Sample Questions':
-                var mes = 'You can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \' I want to learn Nodejs \'';
+                var mes = 'You can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'';
                 break;
             case 'Topics I can help with':
                 var mes = 'I can help you with Networking, finding a new job, or finding training';
@@ -74,7 +74,7 @@ bot.dialog("mainMenu", [
 ])
 .triggerAction({
     matches: /^Hi$|^Hello$|^Hey.*there$|^help$/i
-}).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
     matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
 
@@ -125,7 +125,7 @@ bot.dialog('Networking', [
         session.endDialog('Bye');
     }
 })
-    .cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+    .cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
     });
 
@@ -183,7 +183,7 @@ bot.dialog('Upskill', [
     onInterrupted: function (session) {
         session.endConversation('Please provide additional upskill information');
     }
-}).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+}).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
     matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
 
@@ -279,7 +279,7 @@ bot.dialog('JobIntent', [
     onInterrupted: function (session) {
         session.send('Please provide additional job intent information');
     }
-    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 });
 
@@ -318,7 +318,7 @@ bot.dialog('EasterEgg', [
     onInterrupted: function (session) {
         session.send('Please provide additional easter egg information');
     }
-    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'who can mentor me? \' or \'Events around me\'', {
+    }).cancelAction('cancelAction', 'OK. Remember, you can ask questions like \'Who can Mentor me \' or \'Events around me\' or say things like \'I want to learn Nodejs\'', {
         matches: /^nevermind$|^start over$|^cancel$|^cancel.*order/i
 })
 
