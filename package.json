@@ -1,0 +1,51 @@
+{
+
+  "name": "careerbot",
+
+  "version": "1.0.0",
+
+  "description": "A sample bot for getting started with Bot Framework",
+
+  "main": "app.js",
+
+  "scripts": {
+
+    "test": ""
+
+  },
+
+  "repository": {
+
+    "type": "git",
+
+    "url": "https://github.com/ankurkhemani/careerbot.git"
+
+  },
+
+  "keywords": [
+
+    "botframework"
+
+  ],
+
+  "author": "ankurkhemani",
+
+  "license": "MIT",
+
+  "bugs": {
+
+    "url": "https://github.com/ankurkhemani/careerbot/issues"
+
+  },
+
+  "homepage": "https://github.com/ankurkhemani/careerbot#readme",
+
+  "dependencies": {
+
+    "botbuilder": "^3.8.3",
+
+    "restify": "^4.3.0"
+
+  }
+
+}
